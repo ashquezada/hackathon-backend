@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const DataStore = require('../models/DataStore');
+// const DataStore = require('../models/DataStore');  // PLANTILLA: Descomenta cuando crees DataStore.js
 const GestorVisitas = require('../models/GestorVisitas');
 
 /**
@@ -12,7 +12,9 @@ const GestorVisitas = require('../models/GestorVisitas');
 /**
  * EJEMPLO: Obtener estadísticas generales de items
  * GET /api/admin/stats
+ * NOTA: Comentado porque requiere DataStore.js (plantilla genérica)
  */
+/*
 router.get('/stats', (req, res) => {
   try {
     const total = DataStore.contar();
@@ -35,6 +37,7 @@ router.get('/stats', (req, res) => {
     });
   }
 });
+*/
 
 /**
  * Obtener estadísticas de visitas
@@ -81,7 +84,9 @@ router.post('/reiniciar-visitas', (req, res) => {
 /**
  * EJEMPLO: Limpiar datos de items (útil para testing)
  * POST /api/admin/clear
+ * NOTA: Comentado porque requiere DataStore.js (plantilla genérica)
  */
+/*
 router.post('/clear', (req, res) => {
   try {
     DataStore.limpiar();
@@ -98,5 +103,6 @@ router.post('/clear', (req, res) => {
     });
   }
 });
+*/
 
 module.exports = router;
