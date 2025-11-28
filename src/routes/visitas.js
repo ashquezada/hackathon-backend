@@ -23,6 +23,7 @@ router.get('/estadisticas', visitasController.obtenerEstadisticas);  // Estadís
 router.get('/:id', visitasController.obtenerPorId);     // Obtener visita específica
 router.put('/:id', visitasController.actualizar);       // Actualizar visita (cambiar estado, etc.)
 router.delete('/:id', visitasController.cancelar);      // Cancelar visita
+router.get('/anfitrion/:id', visitasController.obtenerPorAnfitrionId);     // Obtener visita específica
 
 // EJEMPLO: Rutas personalizadas adicionales
 // router.get('/hoy', visitasController.obtenerVisitasHoy);

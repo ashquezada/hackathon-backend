@@ -7,7 +7,6 @@ const { expressjwt: jwt } = require("express-jwt");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-console.log( process.env.PORT)
 
 /**
  * PLANTILLA: Servidor Express Base
