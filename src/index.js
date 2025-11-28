@@ -3,10 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const apiRoutes = require('./routes');
 const { initTables } = require('./config/sqlite');
-const expressJwt = require("express-jwt");
+const { expressjwt: jwt } = require("express-jwt");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+console.log( process.env.PORT)
 
 /**
  * PLANTILLA: Servidor Express Base
@@ -23,16 +24,18 @@ app.use(express.json()); // Parsear JSON
 app.use(express.urlencoded({ extended: true })); // Parsear URL-encoded
 
 const exceptions = [
-  `security/login`,
+  `/api/usuarios/login`,`/api/usuarios`,
 ];
 // 
 app.use(
-  expressJwt({
+  jwt({
     secret: process.env["JWT_SECRET"],
+    algorithms: ["HS256"],
   }).unless({
     path: exceptions,
   })
 );
+
 app.use(function (err, req, res, next) {
   if (err.name === "UnauthorizedError") {
     res.status(401).send("Token Invalido...");
