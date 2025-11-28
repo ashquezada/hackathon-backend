@@ -15,7 +15,7 @@ const GestorUsuarios = require('../models/GestorUsuarios');
 const crear = async (req, res) => {
   try {
     const { visitante, motivo, id_anfitrion, inicio, fin, id_usuario } = req.body;
-    const perfil = req.headers.perfil;
+    const perfil = req.headers.Perfil;
     let estado = 'preautorizado';
 
     // Validaciones básicas
