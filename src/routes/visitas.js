@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const visitasController = require('../controllers/visitasController');
+// Usar controlador con SQLite (o el de memoria si prefieres)
+const visitasController = require('../controllers/visitasControllerSQLite');
 
 /**
  * PLANTILLA: Rutas de Visitas

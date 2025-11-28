@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const apiRoutes = require('./routes');
+const { initTables } = require('./config/sqlite');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -73,10 +74,24 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`📝 Environment: ${process.env.NODE_ENV}`);
-});
+// Iniciar servidor con SQLite
+const startServer = async () => {
+  try {
+    // Inicializar base de datos
+    await initTables();
+    
+    // Iniciar servidor
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+      console.log(`📝 Environment: ${process.env.NODE_ENV}`);
+      console.log(`💾 Base de datos: SQLite`);
+    });
+  } catch (error) {
+    console.error('❌ Error al iniciar servidor:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app;

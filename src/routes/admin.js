@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // const DataStore = require('../models/DataStore');  // PLANTILLA: Descomenta cuando crees DataStore.js
-const GestorVisitas = require('../models/GestorVisitas');
+const GestorVisitas = require('../models/GestorVisitasSQLite');
 
 /**
  * PLANTILLA: Rutas de Administración/Utilidades

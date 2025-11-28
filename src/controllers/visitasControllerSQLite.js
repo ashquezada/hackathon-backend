@@ -1,58 +1,66 @@
-const GestorVisitas = require('../models/GestorVisitas');
+const GestorVisitasSQLite = require('../models/GestorVisitasSQLite');
+const GestorVisitantes = require('../models/GestorVisitantes');
 
 /**
- * PLANTILLA: Controlador de Visitas
- * 
- * Este controlador maneja todas las operaciones de gestión de visitas.
- * Puedes copiar y personalizar según tus necesidades.
- * 
- * INSTRUCCIONES:
- * 1. Copia este archivo y renómbralo según tu entidad
- * 2. Ajusta las validaciones según tus campos
- * 3. Agrega lógica de negocio específica
+ * Controlador de Visitas con SQLite
+ * Maneja todas las operaciones de gestión de visitas usando base de datos
  */
 
 /**
- * PLANTILLA: Crear nueva visita
+ * Crear nueva visita
  * POST /api/visitas
  */
-const crear = (req, res) => {
+const crear = async (req, res) => {
   try {
-    const { visitante, documento, empresa, telefono, motivo, personaVisitada, area, observaciones } = req.body;
+    const { visitante, motivo, id_anfitrion, inicio, fin, id_usuario } = req.body;
 
-    // EJEMPLO: Validaciones básicas
-    if (!visitante) {
+    // Validaciones básicas
+    if (!visitante && !id_usuario) {
       return res.status(400).json({
         success: false,
-        message: 'El nombre del visitante es requerido'
+        message: 'Faltan datos del visitante o usuario que registra la visita'
       });
-    }
-
-    if (!documento) {
+    };
+    if ( typeof visitante !== 'object' || !visitante.dni || !visitante.nombre || !visitante.apellido || !visitante.email) {
       return res.status(400).json({
         success: false,
-        message: 'El documento del visitante es requerido'
+        message: 'Los datos del visitante estan incompletos'
       });
-    }
+    };
+    if (!motivo || !id_anfitrion || !inicio || !fin) {
+        return res.status(400).json({
+        success: false,
+        message: 'Faltan datos obligatorios para crear la visita'
+      });
+    };
+
+    const existe_visitante = await GestorVisitantes.buscarPorDNI(visitante.dni);
+
+    if (!existe_visitante) {
+        // Crear nuevo visitante
+        const nuevo_visitante = await GestorVisitantes.crearVisitante(visitante);
+        visitante.id = nuevo_visitante.id;
+    } else {
+        visitante.id = existe_visitante.id;
+    };
 
     // Crear nueva visita
-    const nuevaVisita = GestorVisitas.crear({
-      visitante,
-      documento,
-      empresa,
-      telefono,
-      motivo,
-      personaVisitada,
-      area,
-      observaciones
+    const nuevaVisita = await GestorVisitasSQLite.crearVisita({
+        id_visita: visitante.id,
+        motivo,
+        id_anfitrion,
+        inicio,
+        fin,
+        id_usuario
     });
 
     res.status(201).json({
       success: true,
       message: 'Visita registrada exitosamente',
-      data: nuevaVisita.toJSON()
+      data: nuevaVisita
     });
   } catch (error) {
+    console.error('Error al crear visita:', error);
     res.status(500).json({
       success: false,
       message: 'Error al registrar la visita',
@@ -62,13 +70,13 @@ const crear = (req, res) => {
 };
 
 /**
- * PLANTILLA: Obtener todas las visitas (con filtros opcionales)
- * GET /api/visitas?estado=esperando&empresa=TechCorp
+ * Obtener todas las visitas (con filtros opcionales)
+ * GET /api/visitas?estado=esperando&area=TI&fecha=2024-01-01
  */
-const obtenerTodas = (req, res) => {
+const obtenerTodas = async (req, res) => {
   try {
     const filtros = req.query;
-    const visitas = GestorVisitas.obtenerTodas(filtros);
+    const visitas = await GestorVisitasSQLite.obtenerTodas(filtros);
 
     res.json({
       success: true,
@@ -76,6 +84,7 @@ const obtenerTodas = (req, res) => {
       data: visitas
     });
   } catch (error) {
+    console.error('Error al obtener visitas:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener las visitas',
@@ -85,13 +94,13 @@ const obtenerTodas = (req, res) => {
 };
 
 /**
- * PLANTILLA: Obtener visita por ID
+ * Obtener visita por ID
  * GET /api/visitas/:id
  */
-const obtenerPorId = (req, res) => {
+const obtenerPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const visita = GestorVisitas.obtenerPorId(id);
+    const visita = await GestorVisitasSQLite.obtenerPorId(id);
 
     if (!visita) {
       return res.status(404).json({
@@ -105,6 +114,7 @@ const obtenerPorId = (req, res) => {
       data: visita
     });
   } catch (error) {
+    console.error('Error al obtener visita:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener la visita',
@@ -114,12 +124,12 @@ const obtenerPorId = (req, res) => {
 };
 
 /**
- * PLANTILLA: Obtener siguiente visita en espera
+ * Obtener siguiente visita en espera
  * GET /api/visitas/siguiente
  */
-const obtenerSiguiente = (req, res) => {
+const obtenerSiguiente = async (req, res) => {
   try {
-    const siguiente = GestorVisitas.obtenerSiguiente();
+    const siguiente = await GestorVisitasSQLite.obtenerSiguiente();
 
     if (!siguiente) {
       return res.status(404).json({
@@ -133,6 +143,7 @@ const obtenerSiguiente = (req, res) => {
       data: siguiente
     });
   } catch (error) {
+    console.error('Error al obtener siguiente visita:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener la siguiente visita',
@@ -142,15 +153,15 @@ const obtenerSiguiente = (req, res) => {
 };
 
 /**
- * PLANTILLA: Actualizar visita (cambiar estado, agregar observaciones, etc.)
+ * Actualizar visita (cambiar estado, agregar observaciones, etc.)
  * PUT /api/visitas/:id
  */
-const actualizar = (req, res) => {
+const actualizar = async (req, res) => {
   try {
     const { id } = req.params;
     const nuevosDatos = req.body;
 
-    // EJEMPLO: Validación de estado
+    // Validación de estado
     const estadosValidos = ['esperando', 'llamando', 'atendiendo', 'finalizado', 'cancelado'];
     if (nuevosDatos.estado && !estadosValidos.includes(nuevosDatos.estado)) {
       return res.status(400).json({
@@ -159,7 +170,7 @@ const actualizar = (req, res) => {
       });
     }
 
-    const visitaActualizada = GestorVisitas.actualizar(id, nuevosDatos);
+    const visitaActualizada = await GestorVisitasSQLite.actualizar(id, nuevosDatos);
 
     if (!visitaActualizada) {
       return res.status(404).json({
@@ -174,6 +185,7 @@ const actualizar = (req, res) => {
       data: visitaActualizada
     });
   } catch (error) {
+    console.error('Error al actualizar visita:', error);
     res.status(500).json({
       success: false,
       message: 'Error al actualizar la visita',
@@ -183,15 +195,15 @@ const actualizar = (req, res) => {
 };
 
 /**
- * PLANTILLA: Cancelar visita
+ * Cancelar visita
  * DELETE /api/visitas/:id
  */
-const cancelar = (req, res) => {
+const cancelar = async (req, res) => {
   try {
     const { id } = req.params;
+    const { motivo } = req.body;
     
-    // Primero actualizar el estado a cancelado
-    const visitaCancelada = GestorVisitas.actualizar(id, { estado: 'cancelado' });
+    const visitaCancelada = await GestorVisitasSQLite.cancelar(id, motivo);
 
     if (!visitaCancelada) {
       return res.status(404).json({
@@ -206,6 +218,7 @@ const cancelar = (req, res) => {
       data: visitaCancelada
     });
   } catch (error) {
+    console.error('Error al cancelar visita:', error);
     res.status(500).json({
       success: false,
       message: 'Error al cancelar la visita',
@@ -215,18 +228,19 @@ const cancelar = (req, res) => {
 };
 
 /**
- * PLANTILLA: Obtener estadísticas
+ * Obtener estadísticas
  * GET /api/visitas/estadisticas
  */
-const obtenerEstadisticas = (req, res) => {
+const obtenerEstadisticas = async (req, res) => {
   try {
-    const estadisticas = GestorVisitas.obtenerEstadisticas();
+    const estadisticas = await GestorVisitasSQLite.obtenerEstadisticas();
 
     res.json({
       success: true,
       data: estadisticas
     });
   } catch (error) {
+    console.error('Error al obtener estadísticas:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener estadísticas',
