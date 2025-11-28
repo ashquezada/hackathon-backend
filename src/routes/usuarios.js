@@ -201,4 +201,33 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/login', async (req, res) => {
+  try {
+    const datos = req.body;
+    
+    // Validaciones básicas
+    if (!datos.dni || !datos.nombre || !datos.apellido || !datos.email || !datos.id_perfil) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faltan datos obligatorios (dni, nombre, apellido, email, id_perfil)'
+      });
+    }
+
+    const nuevoUsuario = await GestorUsuarios.crearUsuario(datos);
+
+    res.status(201).json({
+      success: true,
+      message: 'Usuario creado exitosamente',
+      data: nuevoUsuario
+    });
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al crear usuario',
+      error: error.message
+    });
+  }
+})
+
 module.exports = router;
