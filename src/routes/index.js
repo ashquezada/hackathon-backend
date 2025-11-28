@@ -15,12 +15,13 @@ const router = express.Router();
 // Importar rutas
 // const itemsRoutes = require('./items');  // PLANTILLA: Descomenta cuando crees items.js
 const visitasRoutes = require('./visitas');
+const usuariosRoutes = require('./usuarios');
 const adminRoutes = require('./admin');
 
 // EJEMPLO: Rutas de recursos
 // router.use('/items', itemsRoutes);       // /api/items (plantilla genérica - descomenta cuando sea necesario)
 router.use('/visitas', visitasRoutes);   // /api/visitas (gestión de visitas)
-// router.use('/usuarios', usuariosRoutes);  // /api/usuarios
+router.use('/usuarios', usuariosRoutes);  // /api/usuarios (gestión de usuarios)
 // router.use('/productos', productosRoutes); // /api/productos
 
 // Rutas de administración

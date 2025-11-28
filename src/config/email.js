@@ -104,6 +104,43 @@ const enviarRecordatorioVisita = async (visita, destinatario) => {
 };
 
 /**
+ * Confirmar visita al visitante
+ */
+const confirmarVisitaAlVisitante = async (visita, visitante, anfitrion) => {
+  const fechaInicio = new Date(visita.inicio);
+  const fechaFin = new Date(visita.fin);
+  
+  const html = `
+    <h2>✅ Visita Confirmada</h2>
+    <p>Hola ${visitante.nombre} ${visitante.apellido},</p>
+    <p>Su visita ha sido registrada exitosamente.</p>
+    
+    <h3>Detalles de su visita:</h3>
+    <ul>
+      <li><strong>Fecha:</strong> ${fechaInicio.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</li>
+      <li><strong>Hora de inicio:</strong> ${fechaInicio.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</li>
+      <li><strong>Hora de fin:</strong> ${fechaFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</li>
+      <li><strong>Anfitrión:</strong> ${anfitrion.nombre} ${anfitrion.apellido}</li>
+      <li><strong>Motivo:</strong> ${visita.motivo}</li>
+    </ul>
+    
+    <h3>Instrucciones:</h3>
+    <p>Por favor, presentarse en recepción a la hora indicada con su documento de identidad.</p>
+    <p>Al llegar, el personal de seguridad registrará su ingreso y notificará a su anfitrión.</p>
+    
+    <p><em>Si necesita cancelar o modificar su visita, por favor contacte a su anfitrión.</em></p>
+    
+    <p>¡Gracias!</p>
+  `;
+
+  return await enviarEmail({
+    to: visitante.email,
+    subject: '✅ Confirmación de Visita',
+    html
+  });
+};
+
+/**
  * Notificar cancelación de visita
  */
 const notificarCancelacion = async (visita, destinatario, motivo) => {
@@ -128,6 +165,7 @@ const notificarCancelacion = async (visita, destinatario, motivo) => {
 module.exports = {
   enviarEmail,
   notificarNuevaVisita,
+  confirmarVisitaAlVisitante,
   notificarCheckIn,
   enviarRecordatorioVisita,
   notificarCancelacion

@@ -1,5 +1,7 @@
 const GestorVisitasSQLite = require('../models/GestorVisitasSQLite');
 const GestorVisitantes = require('../models/GestorVisitantes');
+const emailService = require('../config/email');
+const GestorUsuarios = require('../models/GestorUsuarios');
 
 /**
  * Controlador de Visitas con SQLite
@@ -53,6 +55,11 @@ const crear = async (req, res) => {
         fin,
         id_usuario
     });
+
+    const anfitrion = await GestorUsuarios.buscarPorId(id_anfitrion);
+
+    await emailService.confirmarVisitaAlVisitante(
+        {inicio, fin}, visitante, anfitrion);
 
     res.status(201).json({
       success: true,

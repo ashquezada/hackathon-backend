@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 // const DataStore = require('../models/DataStore');  // PLANTILLA: Descomenta cuando crees DataStore.js
 const GestorVisitas = require('../models/GestorVisitasSQLite');
+const emailService = require('../config/email');
 
 /**
  * PLANTILLA: Rutas de Administración/Utilidades
@@ -76,6 +77,56 @@ router.post('/reiniciar-visitas', (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al reiniciar sistema de visitas',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Probar envío de email
+ * POST /api/admin/test-email
+ * Body: { "email": "destinatario@example.com" }
+ */
+router.post('/test-email', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email es requerido'
+      });
+    }
+
+    const resultado = await emailService.enviarEmail({
+      to: email,
+      subject: '✅ Test de Email - Sistema de Visitas',
+      html: `
+        <h2>Email de Prueba</h2>
+        <p>Este es un email de prueba del sistema de gestión de visitas.</p>
+        <p>Si recibiste este mensaje, la configuración de email está funcionando correctamente.</p>
+        <p><strong>Fecha:</strong> ${new Date().toLocaleString('es-ES')}</p>
+      `
+    });
+
+    if (resultado.success) {
+      res.json({
+        success: true,
+        message: 'Email enviado exitosamente',
+        messageId: resultado.messageId
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Error al enviar email',
+        error: resultado.error
+      });
+    }
+  } catch (error) {
+    console.error('Error al probar email:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al probar email',
       error: error.message
     });
   }
