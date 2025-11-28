@@ -3,9 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const apiRoutes = require('./routes');
 const { initTables } = require('./config/sqlite');
+const { expressjwt: jwt } = require("express-jwt");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+console.log( process.env.PORT)
 
 /**
  * PLANTILLA: Servidor Express Base
@@ -21,6 +23,24 @@ app.use(cors()); // Habilitar CORS para todos los orígenes
 app.use(express.json()); // Parsear JSON
 app.use(express.urlencoded({ extended: true })); // Parsear URL-encoded
 
+const exceptions = [
+  `/api/usuarios/login`,`/api/usuarios`,
+];
+// 
+app.use(
+  jwt({
+    secret: process.env["JWT_SECRET"],
+    algorithms: ["HS256"],
+  }).unless({
+    path: exceptions,
+  })
+);
+
+app.use(function (err, req, res, next) {
+  if (err.name === "UnauthorizedError") {
+    res.status(401).send("Token Invalido...");
+  }
+});
 // EJEMPLO: Middleware de logging
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
