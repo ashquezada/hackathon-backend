@@ -218,6 +218,12 @@ router.post('/login', async (req, res) => {
 
     const nuevoUsuario = await GestorUsuarios.buscarPorDNIContr(datos.dni, datos.pass);
     console.log('nuevou',nuevoUsuario);
+    if(!nuevoUsuario){
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado o contraseña incorrecta'
+      });
+    }
     const token = jwt.sign(nuevoUsuario, process.env["JWT_SECRET"], {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
@@ -238,5 +244,8 @@ router.post('/login', async (req, res) => {
   }
 })
 
+router.post('/logout', async (req, res) => {
+  res.json({ ok: true, message: "logout realizado" });
+})
 
 module.exports = router;
