@@ -29,7 +29,8 @@ router.get('/anfitrion/:id', visitasController.obtenerPorAnfitrionId);     // Ob
 // router.get('/hoy', visitasController.obtenerVisitasHoy);
 // router.get('/por-empresa/:empresa', visitasController.obtenerPorEmpresa);
 // router.post('/:id/llamar', visitasController.llamarVisita);
-// router.post('/:id/atender', visitasController.atenderVisita);
+router.post('/checkin/:id', visitasController.checkInVisita);
+router.post('/checkout/:id', visitasController.checkOutVisita);
 // router.post('/:id/finalizar', visitasController.finalizarVisita);
 
 module.exports = router;

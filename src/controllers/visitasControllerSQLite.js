@@ -291,6 +291,62 @@ const obtenerEstadisticas = async (req, res) => {
   }
 };
 
+const checkInVisita = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const visitaActualizada = await GestorVisitasSQLite.registrarCheckIn(id);
+
+    if (!visitaActualizada) {
+      return res.status(404).json({
+        success: false,
+        message: 'Visita no encontrada'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Visita actualizada exitosamente',
+      data: visitaActualizada
+    });
+  } catch (error) {
+    console.error('Error al actualizar visita:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar la visita',
+      error: error.message
+    });
+  }
+};
+
+const checkOutVisita = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const visitaActualizada = await GestorVisitasSQLite.registrarCheckOut(id);
+
+    if (!visitaActualizada) {
+      return res.status(404).json({
+        success: false,
+        message: 'Visita no encontrada'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Visita actualizada exitosamente',
+      data: visitaActualizada
+    });
+  } catch (error) {
+    console.error('Error al actualizar visita:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar la visita',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   crear,
   obtenerTodas,
@@ -299,5 +355,7 @@ module.exports = {
   actualizar,
   cancelar,
   obtenerEstadisticas,
-  obtenerPorAnfitrionId
+  obtenerPorAnfitrionId,
+  checkInVisita,
+  checkOutVisita
 };
