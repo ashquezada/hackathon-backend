@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const GestorUsuarios = require('../models/GestorUsuarios');
+const jwt = require("jsonwebtoken");
 
 /**
  * Obtener todos los usuarios
@@ -200,5 +201,51 @@ router.delete('/:id', async (req, res) => {
     });
   }
 });
+
+router.post('/login', async (req, res) => {
+  try {
+    const datos = req.body;
+    // let token;
+    console.log(datos);
+    
+    // Validaciones básicas
+    if (!datos.dni || !datos.pass) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faltan datos obligatorios (dni, pass)'
+      });
+    }
+
+    const nuevoUsuario = await GestorUsuarios.buscarPorDNIContr(datos.dni, datos.pass);
+    console.log('nuevou',nuevoUsuario);
+    if(!nuevoUsuario){
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado o contraseña incorrecta'
+      });
+    }
+    const token = jwt.sign(nuevoUsuario, process.env["JWT_SECRET"], {
+      expiresIn: process.env.JWT_EXPIRES_IN,
+    });
+    console.log(token);
+
+    res.status(201).json({
+      success: true,
+      message: nuevoUsuario,
+      data: token
+    });
+  } catch (error) {
+    console.error('Usuario no existente', error);
+    res.status(500).json({
+      success: false,
+      message: 'Usuario no existente o no autorizado',
+      error: error.message
+    });
+  }
+})
+
+router.post('/logout', async (req, res) => {
+  res.json({ ok: true, message: "logout realizado" });
+})
 
 module.exports = router;

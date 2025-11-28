@@ -85,6 +85,24 @@ class GestorVisitasSQLite {
     return await get(sql, [id]);
   }
 
+  // Obtener visitas por ID de anfitrion
+  static async obtenerPorAnfitrionId(id) {
+    const sql = `
+      SELECT v.*, 
+             u_anf.nombre as anfitrion_nombre, u_anf.apellido as anfitrion_apellido,
+             vis.nombre as visitante_nombre, vis.apellido as visitante_apellido, vis.empresa,
+             u_vis.nombre as usuario_nombre, u_vis.apellido as usuario_apellido
+      FROM visitas v
+      LEFT JOIN usuarios u_anf ON v.id_anfitrion = u_anf.id
+      LEFT JOIN visitantes vis ON v.id_visitante = vis.id
+      LEFT JOIN usuarios u_vis ON v.id_usuario = u_vis.id
+      WHERE u_anf.id = ?
+    `;
+    console.log("SQL:", sql, id);
+    
+    return await query(sql, [id]);
+  }
+
   // Registrar check-in
   static async registrarCheckIn(id) {
     const sql = `

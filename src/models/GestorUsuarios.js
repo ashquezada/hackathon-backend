@@ -33,6 +33,41 @@ class GestorUsuarios {
     return await get(sql, [dni]);
   }
 
+  static async buscarPorDNIContr(dni, pass) {
+    let params = [];
+    // let sql = [];
+    let campos = [];
+    // const sql = `
+    //   SELECT u.*, 
+    //          p.perfil,
+    //          a.area
+    //   FROM usuarios u
+    //   LEFT JOIN perfiles p ON u.id_perfil = p.id
+    //   LEFT JOIN areas a ON u.id_area = a.id
+    //   WHERE u.dni = ? and u.contraseña = ?
+    // `;
+    if (dni !== undefined) {
+      campos.push('dni = ?');
+      params.push(dni);
+    }
+    
+    if (pass !== undefined) {
+      campos.push('pass = ?');
+      params.push(pass);
+    }
+    const sql = `
+      SELECT u.*, 
+             p.perfil,
+             a.area
+      FROM usuarios u
+      LEFT JOIN perfiles p ON u.id_perfil = p.id
+      LEFT JOIN areas a ON u.id_area = a.id 
+      WHERE ${campos.join(' and ')}
+    `;
+    console.log('sql', sql);
+    return await get(sql, params);
+  }
+
   // Buscar usuario por email
   static async buscarPorEmail(email) {
     const sql = `

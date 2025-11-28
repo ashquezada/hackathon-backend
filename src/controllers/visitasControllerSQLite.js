@@ -140,6 +140,31 @@ const obtenerPorId = async (req, res) => {
   }
 };
 
+const obtenerPorAnfitrionId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const visitas = await GestorVisitasSQLite.obtenerPorAnfitrionId(id);
+
+    if (!visitas) {
+      return res.status(404).json({
+        success: false,
+        message: 'El anfitrion no tiene visitas'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: visitas
+    });
+  } catch (error) {
+    console.error('Error al obtener visita:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener las visitas',
+      error: error.message
+    });
+  }
+};
 /**
  * Obtener siguiente visita en espera
  * GET /api/visitas/siguiente
@@ -273,5 +298,6 @@ module.exports = {
   obtenerSiguiente,
   actualizar,
   cancelar,
-  obtenerEstadisticas
+  obtenerEstadisticas,
+  obtenerPorAnfitrionId
 };
