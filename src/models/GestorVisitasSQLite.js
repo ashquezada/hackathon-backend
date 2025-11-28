@@ -198,6 +198,7 @@ class GestorVisitasSQLite {
       SET ${campos.join(', ')}
       WHERE id = ?
     `;
+    console.log("🚀 ~ 246 ~ actualizarVisita ~ sql:", sql, params)
     
     await run(sql, params);
     return this.obtenerVisitaPorId(id);

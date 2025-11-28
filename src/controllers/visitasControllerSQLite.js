@@ -204,7 +204,7 @@ const actualizar = async (req, res) => {
     const nuevosDatos = req.body;
 
     // Validación de estado
-    const estadosValidos = ['esperando', 'llamando', 'atendiendo', 'finalizado', 'cancelado'];
+    const estadosValidos = ['esperando', 'llamando', 'atendiendo', 'finalizado', 'cancelado','aprobado','rechazado'];
     if (nuevosDatos.estado && !estadosValidos.includes(nuevosDatos.estado)) {
       return res.status(400).json({
         success: false,
@@ -212,7 +212,7 @@ const actualizar = async (req, res) => {
       });
     }
 
-    const visitaActualizada = await GestorVisitasSQLite.actualizar(id, nuevosDatos);
+    const visitaActualizada = await GestorVisitasSQLite.actualizarVisita(id, nuevosDatos);
 
     if (!visitaActualizada) {
       return res.status(404).json({
