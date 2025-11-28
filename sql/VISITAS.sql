@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS visitas (
   inicio DATETIME NOT NULL,
   fin DATETIME NOT NULL,
   motivo TEXT NOT NULL,
+  estado TEXT NOT NULL DEFAULT 'preautorizado' CHECK (estado IN ('preautorizado', 'inesperado', 'en_instalaciones', 'aprobado', 'rechazado', 'salida')),
   check_in DATETIME,
   check_out DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -55,15 +56,15 @@ CREATE INDEX idx_visitas_inicio ON visitas(inicio);
 -- Los datos de ejemplo anteriores se mantienen para referencia
 
 -- Visitas externas (con visitantes de la tabla VISITANTES)
-INSERT INTO visitas (id_anfitrion, id_visitante, id_usuario, inicio, fin, motivo, check_in, check_out) VALUES
-(2, 1, NULL, '2024-11-27 10:00:00', '2024-11-27 11:30:00', 'Reunión comercial con proveedor', '2024-11-27 10:05:00', '2024-11-27 11:25:00'),
-(4, 2, NULL, '2024-11-27 09:00:00', '2024-11-27 10:00:00', 'Entrevista laboral candidato', '2024-11-27 08:55:00', '2024-11-27 10:10:00'),
-(2, 3, NULL, '2024-11-27 14:00:00', '2024-11-27 15:30:00', 'Consultoría técnica', '2024-11-27 14:10:00', NULL);
+INSERT INTO visitas (id_anfitrion, id_visitante, id_usuario, inicio, fin, motivo, estado, check_in, check_out) VALUES
+(2, 1, NULL, '2024-11-27 10:00:00', '2024-11-27 11:30:00', 'Reunión comercial con proveedor', 'salida', '2024-11-27 10:05:00', '2024-11-27 11:25:00'),
+(4, 2, NULL, '2024-11-27 09:00:00', '2024-11-27 10:00:00', 'Entrevista laboral candidato', 'salida', '2024-11-27 08:55:00', '2024-11-27 10:10:00'),
+(2, 3, NULL, '2024-11-27 14:00:00', '2024-11-27 15:30:00', 'Consultoría técnica', 'en_instalaciones', '2024-11-27 14:10:00', NULL);
 
 -- Visitas internas (usuarios visitando a otros usuarios)
-INSERT INTO visitas (id_anfitrion, id_visitante, id_usuario, inicio, fin, motivo, check_in, check_out) VALUES
-(2, NULL, 4, '2024-11-27 11:00:00', '2024-11-27 12:00:00', 'Coordinación de proyecto interdepartamental', '2024-11-27 11:02:00', '2024-11-27 11:58:00'),
-(4, NULL, 2, '2024-11-27 15:00:00', '2024-11-27 16:00:00', 'Revisión de presupuestos', NULL, NULL);
+INSERT INTO visitas (id_anfitrion, id_visitante, id_usuario, inicio, fin, motivo, estado, check_in, check_out) VALUES
+(2, NULL, 4, '2024-11-27 11:00:00', '2024-11-27 12:00:00', 'Coordinación de proyecto interdepartamental', 'salida', '2024-11-27 11:02:00', '2024-11-27 11:58:00'),
+(4, NULL, 2, '2024-11-27 15:00:00', '2024-11-27 16:00:00', 'Revisión de presupuestos', 'preautorizado', NULL, NULL);
 
 -- ============================================================
 -- CONSULTAS ÚTILES

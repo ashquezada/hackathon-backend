@@ -6,19 +6,21 @@
 -- Crear tabla perfiles
 CREATE TABLE IF NOT EXISTS perfiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  perfil TEXT NOT NULL UNIQUE CHECK(perfil IN ('Admin', 'Autorizante', 'Guardia', 'Visitante'))
+  perfil TEXT NOT NULL UNIQUE CHECK(perfil IN ('Gerente', 'Director', 'Coordinador de Sorteos', 'Relaciones Institucionales', 'Auxiliar Administrativo', 'Recepcionista'))
 );
 
 -- ============================================================
 -- DATOS INICIALES
 -- ============================================================
 
--- Insertar los 4 perfiles del sistema (NO agregar más registros)
+-- Insertar los 6 perfiles del sistema
 INSERT INTO perfiles (id, perfil) VALUES 
-  (1, 'Admin'),         -- Administrador del sistema
-  (2, 'Autorizante'),   -- Usuario que autoriza visitas
-  (3, 'Guardia'),       -- Personal de seguridad
-  (4, 'Visitante');     -- Visitante externo
+  (1, 'Gerente'),
+  (2, 'Director'),
+  (3, 'Coordinador de Sorteos'),
+  (4, 'Relaciones Institucionales'),
+  (5, 'Auxiliar Administrativo'),
+  (6, 'Recepcionista');
 
 -- ============================================================
 -- ÍNDICES
@@ -54,7 +56,8 @@ WHERE u.id IS NULL;
 -- ============================================================
 -- NOTAS
 -- ============================================================
--- 1. Los IDs de perfiles son fijos: 1=Admin, 2=Autorizante, 3=Guardia, 4=Visitante
+-- 1. Los IDs de perfiles son fijos: 1=Gerente, 2=Director, 3=Coordinador de Sorteos, 
+--    4=Relaciones Institucionales, 5=Auxiliar Administrativo, 6=Recepcionista
 -- 2. No se debe modificar estos registros ya que hay FKs en otras tablas
--- 3. El CHECK constraint asegura que solo estos 4 valores son válidos
+-- 3. El CHECK constraint asegura que solo estos 6 valores son válidos
 -- 4. UNIQUE constraint previene duplicados y crea índice automático

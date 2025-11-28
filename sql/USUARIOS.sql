@@ -6,6 +6,7 @@
 CREATE TABLE usuarios (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   dni INTEGER NOT NULL UNIQUE,
+  pass TEXT NOT NULL,
   nombre TEXT NOT NULL,
   apellido TEXT NOT NULL,
   email TEXT NOT NULL CHECK(email LIKE '%@%'),
@@ -41,45 +42,36 @@ CREATE INDEX idx_usuarios_activos ON usuarios(fecha_baja) WHERE fecha_baja IS NU
 -- DATOS DE EJEMPLO
 -- ============================================
 
-INSERT INTO usuarios (dni, nombre, apellido, email, id_perfil, id_area, id_superior) VALUES
--- Administradores
-(12345678, 'Juan', 'Pérez', 'juan.perez@empresa.com', 1, NULL, NULL),
-(23456789, 'Laura', 'Fernández', 'laura.fernandez@empresa.com', 1, NULL, NULL),
+INSERT INTO usuarios (dni, pass, nombre, apellido, email, id_perfil, id_area, id_superior) VALUES
+-- Gerentes (perfil 1)
+(12345678, '12345678', 'Juan', 'Pérez', 'juan.perez@empresa.com', 1, 1, NULL),
+(23456789, '23456789', 'Laura', 'Fernández', 'laura.fernandez@empresa.com', 1, 2, NULL),
 
--- Autorizantes - Recursos Humanos
-(87654321, 'María', 'González', 'maria.gonzalez@empresa.com', 2, 1, 1),
-(99887766, 'Carlos', 'Rodríguez', 'carlos.rodriguez@empresa.com', 2, 1, 2),
-(34567890, 'Patricia', 'Sánchez', 'patricia.sanchez@empresa.com', 2, 1, 2),
+-- Directores (perfil 2)
+(87654321, '87654321', 'María', 'González', 'maria.gonzalez@empresa.com', 2, 1, 1),
+(99887766, '99887766', 'Carlos', 'Rodríguez', 'carlos.rodriguez@empresa.com', 2, 2, 2),
+(34567890, '34567890', 'Patricia', 'Sánchez', 'patricia.sanchez@empresa.com', 2, 3, 1),
 
--- Autorizantes - Tecnología
-(55667788, 'Ana', 'López', 'ana.lopez@empresa.com', 2, 2, 1),
-(45678901, 'Roberto', 'Gómez', 'roberto.gomez@empresa.com', 2, 2, 3),
-(56789012, 'Claudia', 'Morales', 'claudia.morales@empresa.com', 2, 2, 3),
+-- Coordinadores de Sorteos (perfil 3)
+(55667788, '55667788', 'Ana', 'López', 'ana.lopez@empresa.com', 3, 4, 3),
+(45678901, '45678901', 'Roberto', 'Gómez', 'roberto.gomez@empresa.com', 3, 4, 3),
+(56789012, '56789012', 'Claudia', 'Morales', 'claudia.morales@empresa.com', 3, 4, 6),
 
--- Autorizantes - Ventas
-(67890123, 'Fernando', 'Ruiz', 'fernando.ruiz@empresa.com', 2, 3, 1),
-(78901234, 'Valeria', 'Castro', 'valeria.castro@empresa.com', 2, 3, 8),
+-- Relaciones Institucionales (perfil 4)
+(67890123, '67890123', 'Fernando', 'Ruiz', 'fernando.ruiz@empresa.com', 4, 5, 1),
+(78901234, '78901234', 'Valeria', 'Castro', 'valeria.castro@empresa.com', 4, 5, 9),
+(89012345, '89012345', 'Diego', 'Mendoza', 'diego.mendoza@empresa.com', 4, 5, 9),
 
--- Autorizantes - Marketing
-(89012345, 'Diego', 'Mendoza', 'diego.mendoza@empresa.com', 2, 4, 1),
-(90123456, 'Sofía', 'Torres', 'sofia.torres@empresa.com', 2, 4, 10),
+-- Auxiliares Administrativos (perfil 5)
+(90123456, '90123456', 'Sofía', 'Torres', 'sofia.torres@empresa.com', 5, 6, 4),
+(11111111, '11111111', 'Andrés', 'Vega', 'andres.vega@empresa.com', 5, 7, 5),
+(22222222, '22222222', 'Carolina', 'Ramírez', 'carolina.ramirez@empresa.com', 5, 8, 3),
+(33333333, '33333333', 'Miguel', 'Flores', 'miguel.flores@empresa.com', 5, 9, 4),
+(44444444, '44444444', 'Isabel', 'Herrera', 'isabel.herrera@empresa.com', 5, 10, 5),
 
--- Autorizantes - Finanzas
-(11111111, 'Andrés', 'Vega', 'andres.vega@empresa.com', 2, 5, 1),
-(22222222, 'Carolina', 'Ramírez', 'carolina.ramirez@empresa.com', 2, 5, 12),
-
--- Autorizantes - Operaciones
-(33333333, 'Miguel', 'Flores', 'miguel.flores@empresa.com', 2, 6, 1),
-
--- Autorizantes - Legal
-(44444444, 'Isabel', 'Herrera', 'isabel.herrera@empresa.com', 2, 8, 1),
-
--- Guardias de Seguridad
-(11223344, 'Pedro', 'Martínez', 'pedro.martinez@empresa.com', 3, 13, 1),
-(22334455, 'Jorge', 'Silva', 'jorge.silva@empresa.com', 3, 13, 1),
-(33445566, 'Ricardo', 'Ortiz', 'ricardo.ortiz@empresa.com', 3, 13, 1),
-(44556677, 'Eduardo', 'Navarro', 'eduardo.navarro@empresa.com', 3, 13, 1),
-(55667799, 'Gabriel', 'Rojas', 'gabriel.rojas@empresa.com', 3, 13, 1);
+-- Recepcionistas (perfil 6) - 2 usuarios
+(11223344, '11223344', 'Pedro', 'Martínez', 'pedro.martinez@empresa.com', 6, NULL, 1),
+(22334455, '22334455', 'Lucía', 'Ramírez', 'lucia.ramirez@empresa.com', 6, NULL, 1);
 
 -- ============================================
 -- CONSULTAS ÚTILES
@@ -88,13 +80,12 @@ INSERT INTO usuarios (dni, nombre, apellido, email, id_perfil, id_area, id_super
 -- Obtener todos los usuarios activos
 SELECT * FROM usuarios WHERE fecha_baja IS NULL;
 
--- Obtener autorizantes de un área específica
+-- Obtener usuarios por perfil específico
 SELECT u.*, p.perfil, a.area
 FROM usuarios u
 INNER JOIN perfiles p ON u.id_perfil = p.id
 LEFT JOIN areas a ON u.id_area = a.id
-WHERE p.perfil = 'Autorizante' 
-  AND u.id_area = 1 
+WHERE p.perfil = 'Director' 
   AND u.fecha_baja IS NULL;
 
 -- Obtener equipo de un supervisor
@@ -104,17 +95,24 @@ WHERE u.id_superior = 2
 
 -- Obtener jerarquía completa de un usuario
 WITH RECURSIVE jerarquia AS (
-  SELECT id, dni, nombre, apellido, rol, id_superior, 0 as nivel
+  SELECT id, dni, nombre, apellido, id_perfil, id_superior, 0 as nivel
   FROM usuarios
   WHERE id = 1
   
   UNION ALL
   
-  SELECT u.id, u.dni, u.nombre, u.apellido, u.rol, u.id_superior, j.nivel + 1
+  SELECT u.id, u.dni, u.nombre, u.apellido, u.id_perfil, u.id_superior, j.nivel + 1
   FROM usuarios u
   INNER JOIN jerarquia j ON u.id_superior = j.id
 )
 SELECT * FROM jerarquia;
+
+-- Obtener todos los recepcionistas
+SELECT u.*, p.perfil
+FROM usuarios u
+INNER JOIN perfiles p ON u.id_perfil = p.id
+WHERE p.perfil = 'Recepcionista'
+  AND u.fecha_baja IS NULL;
 
 -- ============================================
 -- OPERACIONES COMUNES

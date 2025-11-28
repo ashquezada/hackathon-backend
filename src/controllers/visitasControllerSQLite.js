@@ -15,6 +15,8 @@ const GestorUsuarios = require('../models/GestorUsuarios');
 const crear = async (req, res) => {
   try {
     const { visitante, motivo, id_anfitrion, inicio, fin, id_usuario } = req.body;
+    const perfil = req.headers.perfil;
+    let estado = 'preautorizado';
 
     // Validaciones básicas
     if (!visitante && !id_usuario) {
@@ -46,6 +48,12 @@ const crear = async (req, res) => {
         visitante.id = existe_visitante.id;
     };
 
+    if ( perfil == 6 ) {
+      estado = 'inesperado';
+    } else {
+      estado = 'preautorizado';
+    }
+
     // Crear nueva visita
     const nuevaVisita = await GestorVisitasSQLite.crearVisita({
         id_visita: visitante.id,
@@ -53,14 +61,16 @@ const crear = async (req, res) => {
         id_anfitrion,
         inicio,
         fin,
-        id_usuario
+        id_usuario,
+        estado
     });
 
     const anfitrion = await GestorUsuarios.buscarPorId(id_anfitrion);
 
-    await emailService.confirmarVisitaAlVisitante(
-        {inicio, fin}, visitante, anfitrion);
-
+    if ( estado === 'preautorizado' ) {
+      await emailService.confirmarVisitaAlVisitante(
+          {inicio, fin, motivo}, visitante, anfitrion);
+    }
     res.status(201).json({
       success: true,
       message: 'Visita registrada exitosamente',

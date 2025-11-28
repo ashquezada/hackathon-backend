@@ -4,6 +4,7 @@ class GestorVisitantes {
   
   // Crear o actualizar visitante (UPSERT)
   static async crearVisitante(datos) {
+    console.log("🚀 ~ 7 ~ crearVisitante ~ datos:", datos)
     const sql = `
       INSERT INTO visitantes (dni, nombre, apellido, email, empresa)
       VALUES (?, ?, ?, ?, ?)

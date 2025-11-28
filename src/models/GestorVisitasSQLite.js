@@ -4,11 +4,12 @@ class GestorVisitasSQLite {
   
   // Crear nueva visita
   static async crearVisita(datos) {
+    console.log("🚀 ~ 7 ~ crearVisita ~ datos:", datos)
     const sql = `
       INSERT INTO visitas (
         id_anfitrion, id_visitante, id_usuario, 
-        inicio, fin, motivo, check_in, check_out
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        inicio, fin, motivo, estado, check_in, check_out
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     const params = [
@@ -18,6 +19,7 @@ class GestorVisitasSQLite {
       datos.inicio,
       datos.fin,
       datos.motivo,
+      datos.estado || 'preautorizado',
       datos.check_in || null,
       datos.check_out || null
     ];
@@ -87,7 +89,8 @@ class GestorVisitasSQLite {
   static async registrarCheckIn(id) {
     const sql = `
       UPDATE visitas 
-      SET check_in = datetime('now', 'localtime')
+      SET check_in = datetime('now', 'localtime'),
+          estado = 'en_instalaciones'
       WHERE id = ?
     `;
     
@@ -99,11 +102,30 @@ class GestorVisitasSQLite {
   static async registrarCheckOut(id) {
     const sql = `
       UPDATE visitas 
-      SET check_out = datetime('now', 'localtime')
+      SET check_out = datetime('now', 'localtime'),
+          estado = 'salida'
       WHERE id = ?
     `;
     
     await run(sql, [id]);
+    return this.obtenerVisitaPorId(id);
+  }
+
+  // Cambiar estado de visita
+  static async cambiarEstado(id, nuevoEstado) {
+    const estadosValidos = ['preautorizado', 'inesperado', 'en_instalaciones', 'aprobado', 'rechazado', 'salida'];
+    
+    if (!estadosValidos.includes(nuevoEstado)) {
+      throw new Error(`Estado inválido. Debe ser uno de: ${estadosValidos.join(', ')}`);
+    }
+
+    const sql = `
+      UPDATE visitas 
+      SET estado = ?
+      WHERE id = ?
+    `;
+    
+    await run(sql, [nuevoEstado, id]);
     return this.obtenerVisitaPorId(id);
   }
 
@@ -130,6 +152,11 @@ class GestorVisitasSQLite {
     if (datos.motivo !== undefined) {
       campos.push('motivo = ?');
       params.push(datos.motivo);
+    }
+
+    if (datos.estado !== undefined) {
+      campos.push('estado = ?');
+      params.push(datos.estado);
     }
 
     if (datos.check_in !== undefined) {

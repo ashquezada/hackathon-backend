@@ -133,6 +133,70 @@ router.post('/test-email', async (req, res) => {
 });
 
 /**
+ * Probar email de confirmación con QR
+ * POST /api/admin/test-email-qr
+ * Body: { "email": "destinatario@example.com", "dni": "12345678" }
+ */
+router.post('/test-email-qr', async (req, res) => {
+  try {
+    const { email, dni } = req.body;
+
+    if (!email || !dni) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email y DNI son requeridos'
+      });
+    }
+
+    // Datos de prueba
+    const visitaPrueba = {
+      inicio: new Date().toISOString(),
+      fin: new Date(Date.now() + 3600000).toISOString(),
+      motivo: 'Reunión de prueba'
+    };
+
+    const visitantePrueba = {
+      dni: dni,
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      email: email
+    };
+
+    const anfitrionPrueba = {
+      nombre: 'María',
+      apellido: 'González'
+    };
+
+    const resultado = await emailService.confirmarVisitaAlVisitante(
+      visitaPrueba,
+      visitantePrueba,
+      anfitrionPrueba
+    );
+
+    if (resultado.success) {
+      res.json({
+        success: true,
+        message: 'Email con QR enviado exitosamente',
+        messageId: resultado.messageId
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Error al enviar email',
+        error: resultado.error
+      });
+    }
+  } catch (error) {
+    console.error('Error al probar email con QR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al probar email con QR',
+      error: error.message
+    });
+  }
+});
+
+/**
  * EJEMPLO: Limpiar datos de items (útil para testing)
  * POST /api/admin/clear
  * NOTA: Comentado porque requiere DataStore.js (plantilla genérica)

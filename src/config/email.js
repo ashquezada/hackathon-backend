@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const QRCode = require('qrcode');
 
 /**
  * Configuración de Nodemailer para envío de emails
@@ -23,7 +24,8 @@ const enviarEmail = async (opciones) => {
       from: process.env.EMAIL_USER,
       to: opciones.to,
       subject: opciones.subject,
-      html: opciones.html || opciones.text
+      html: opciones.html || opciones.text,
+      attachments: opciones.attachments || []
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -39,6 +41,7 @@ const enviarEmail = async (opciones) => {
  * Notificar nueva visita al anfitrión
  */
 const notificarNuevaVisita = async (visita, anfitrion) => {
+  console.log("🚀 ~ 37 ~ notificarNuevaVisita ~ visita:", visita, anfitrion)
   const html = `
     <h2>Nueva Visita Programada</h2>
     <p>Hola ${anfitrion.nombre} ${anfitrion.apellido},</p>
@@ -107,8 +110,17 @@ const enviarRecordatorioVisita = async (visita, destinatario) => {
  * Confirmar visita al visitante
  */
 const confirmarVisitaAlVisitante = async (visita, visitante, anfitrion) => {
+  console.log("🚀 ~ confirmarVisitaAlVisitante ~ visita, visitante, anfitrion:", visita, visitante, anfitrion)
   const fechaInicio = new Date(visita.inicio);
   const fechaFin = new Date(visita.fin);
+  
+  // Generar QR con el DNI del visitante como buffer (adjunto)
+  const qrBuffer = await QRCode.toBuffer(visitante.dni.toString(), {
+    errorCorrectionLevel: 'M',
+    type: 'png',
+    width: 300,
+    margin: 2
+  });
   
   const html = `
     <h2>✅ Visita Confirmada</h2>
@@ -117,15 +129,23 @@ const confirmarVisitaAlVisitante = async (visita, visitante, anfitrion) => {
     
     <h3>Detalles de su visita:</h3>
     <ul>
+      <li><strong>DNI:</strong> ${visitante.dni}</li>
       <li><strong>Fecha:</strong> ${fechaInicio.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</li>
       <li><strong>Hora de inicio:</strong> ${fechaInicio.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</li>
       <li><strong>Hora de fin:</strong> ${fechaFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</li>
       <li><strong>Anfitrión:</strong> ${anfitrion.nombre} ${anfitrion.apellido}</li>
-      <li><strong>Motivo:</strong> ${visita.motivo}</li>
+      <li><strong>Motfrfrfrfivo:</strong> ${visita.motivo}</li>
     </ul>
+    
+    <div style="text-align: center; margin: 20px 0;">
+      <h3>Código QR de Identificación</h3>
+      <img src="cid:qrcode" alt="QR DNI" style="border: 2px solid #333; padding: 10px; background: white; width: 300px; height: 300px;"/>
+      <p style="font-size: 12px; color: #666;">Presente este código QR en recepción</p>
+    </div>
     
     <h3>Instrucciones:</h3>
     <p>Por favor, presentarse en recepción a la hora indicada con su documento de identidad.</p>
+    <p>Puede mostrar este código QR en recepción para agilizar su registro.</p>
     <p>Al llegar, el personal de seguridad registrará su ingreso y notificará a su anfitrión.</p>
     
     <p><em>Si necesita cancelar o modificar su visita, por favor contacte a su anfitrión.</em></p>
@@ -136,7 +156,14 @@ const confirmarVisitaAlVisitante = async (visita, visitante, anfitrion) => {
   return await enviarEmail({
     to: visitante.email,
     subject: '✅ Confirmación de Visita',
-    html
+    html,
+    attachments: [
+      {
+        filename: 'qr-visita.png',
+        content: qrBuffer,
+        cid: 'qrcode' // Content ID para referenciar en el HTML con src="cid:qrcode"
+      }
+    ]
   });
 };
 

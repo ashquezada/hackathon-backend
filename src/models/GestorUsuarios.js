@@ -113,12 +113,13 @@ class GestorUsuarios {
   // Crear nuevo usuario
   static async crearUsuario(datos) {
     const sql = `
-      INSERT INTO usuarios (dni, nombre, apellido, email, id_perfil, id_area, id_superior)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO usuarios (dni, pass, nombre, apellido, email, id_perfil, id_area, id_superior)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     const params = [
       datos.dni,
+      datos.pass || datos.dni.toString(), // Si no se proporciona pass, usa el DNI
       datos.nombre,
       datos.apellido,
       datos.email,
@@ -164,6 +165,11 @@ class GestorUsuarios {
     if (datos.id_superior !== undefined) {
       campos.push('id_superior = ?');
       params.push(datos.id_superior);
+    }
+
+    if (datos.pass !== undefined) {
+      campos.push('pass = ?');
+      params.push(datos.pass);
     }
     
     if (campos.length === 0) {
@@ -224,6 +230,31 @@ class GestorUsuarios {
     
     const result = await get(sql, params);
     return result.total;
+  }
+
+  // Validar credenciales de usuario (login)
+  static async validarCredenciales(dni, pass) {
+    const sql = `
+      SELECT u.*, 
+             p.perfil,
+             a.area
+      FROM usuarios u
+      LEFT JOIN perfiles p ON u.id_perfil = p.id
+      LEFT JOIN areas a ON u.id_area = a.id
+      WHERE u.dni = ? AND u.pass = ? AND u.fecha_baja IS NULL
+    `;
+    return await get(sql, [dni, pass]);
+  }
+
+  // Cambiar contraseña
+  static async cambiarPass(id, nuevaPass) {
+    const sql = `
+      UPDATE usuarios 
+      SET pass = ?
+      WHERE id = ?
+    `;
+    await run(sql, [nuevaPass, id]);
+    return this.buscarPorId(id);
   }
 }
 
